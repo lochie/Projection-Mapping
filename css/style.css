@@ -1,0 +1,37 @@
+body{
+	border:0;
+	padding: 0;
+	margin: 0;
+	font-size: 15px;
+	font-family: "Helvetica", arial, verdana;
+	background: #191919;
+}
+canvas{
+	display: block;
+	background: white;
+	transform-origin: 0 0;
+}
+
+.admin{
+	z-index: 9;
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+	background: rgba(0,0,0,0.8);
+}
+#fps,
+.btn{
+	display: inline-block;
+	font-size: 12px;
+	margin: 20px 10px;
+	padding: 10px 20px;
+	color: black;
+	background: #aaa;
+}
+.btn{
+	cursor: pointer;
+	color: #fff;
+	background:#8a0000;
+}
+.btn:hover{ background: #822d2d; }

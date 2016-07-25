@@ -1,111 +1,124 @@
 var fx = (function(){
 	var version = 1;
-	var draw = true;
 
+	/* ORGANISATION */
 	var thrusherLogo = new Image();
 		thrusherLogo.src = "../img/thrusher.png";
 
-	var awkwardLogoLeft = new Image();
-		awkwardLogoLeft.src = "../img/awkward-left.png";
-
-	var awkwardLogoRight = new Image();
-		awkwardLogoRight.src = "../img/awkward-right.png";
-
 	var video = document.createElement('video');
-	video.src = "../video/kaleidoscope.mp4";
+	video.src = "../video/long.mp4";
+	var startTime = {
+		minutes:3,
+		seconds:43,
+	}
 	video.muted = true;
 	video.loop = true;
-
+	video.currentTime = (startTime.minutes*60)+startTime.seconds;
 	video.play();
 
-	video.addEventListener('play', function(e){
-		var $this = this;
-		(function loop(){
-			if (!$this.paused && !$this.ended) {
-				setTimeout(loop, 1000 / 30); // drawing at 30fps
-			}
-		})();
-	}, 0);
+
 
 
 	/* STUFF */
-	var dots = {
-		particles:[],
-		amount:20,
-		bigAmount:100,
-	};
-	var bricks = {
-		particles:[],
-		amountX:10,
-		amountY:10,
-	};
-
-	var wheelTrails = {
-		particles:[],
-		amount:20,
-	};
-
-	/* STUFF */
-
 	function init(){
-		reset();
-	}
-	function reset(){
-		brick.reset();
-		dot.reset();
-		wheelTrail.reset();
 	}
 
 	function update(ctx){
-		ctx.drawImage(video, 0, 0, map.width, map.height);
+		var keyboard = communicate.get( 'keyboard' );
+
+		switch (keyboard.lastKey){
+			case keyboard.code['0']:
+				updateVideo(ctx);
+				break;
+			case keyboard.code['1']:
+				trippyDots.update(ctx);
+				break;
+			case keyboard.code['2']:
+				brick.update(ctx);
+				break;
+			default:
+				break;
+		}
 
 		ctx.drawImage( thrusherLogo, (map.width/2)-(thrusherLogo.width/2), (map.height/2)-(thrusherLogo.height/2) );
 
-		ctx.drawImage( awkwardLogoLeft, ((map.width/map.x)*map.deck), -100 );
-		ctx.drawImage( awkwardLogoRight, map.width-((map.width/map.x)*map.deck)-awkwardLogoRight.width, -100 );
+		switch (keyboard.lastKey){
+			case keyboard.code['3']:
+				ctx.fillStyle = "rgba(0,0,0,0.8)";
+				ctx.fillRect(0,0,map.width,map.height);
+				tamponGame.update(ctx);
+				break;
+			default:
+				break;
+		}
 
-	//	brick.update(ctx);
-		dot.update(ctx);
+		explosions.update(ctx);
 		wheelTrail.update(ctx);
+
 	}
 	function move(){
 		brick.move();
-		dot.move();
+		explosions.move();
 		wheelTrail.move();
+		tamponGame.move();
 	}
 	function click(){
 		brick.click();
-		dot.click();
+		explosions.click();
 		wheelTrail.click();
+		tamponGame.click();
 	}
 
 
 
 	/* STUFF */
+	function updateVideo(ctx){
+		ctx.drawImage( video, 0, 0, map.width/2, map.height/2, 0, 0, map.width/2, map.height/2 );
 
+		ctx.save();
+			ctx.translate(map.width, 0);
+			ctx.scale(-1, 1);
+			ctx.drawImage( video, 0, 0, map.width/2, map.height/2, 0, 0, map.width/2, map.height/2 );
+		ctx.restore();
+
+		ctx.save();
+			ctx.translate(map.width, map.height);
+			ctx.scale(-1, -1);
+			ctx.drawImage( video, 0, 0, map.width/2, map.height/2, 0, 0, map.width/2, map.height/2 );
+		ctx.restore();
+
+		ctx.save();
+			ctx.translate(0, map.height);
+			ctx.scale(1, -1);
+			ctx.drawImage( video, 0, 0, map.width/2, map.height/2, 0, 0, map.width/2, map.height/2 );
+		ctx.restore();
+	}
 
 	var brick = (function(){
-		function reset(){
-			bricks.particles = [];
-			for (var i=0;i<bricks.amountX;i++){
-				for (var j=0;j<bricks.amountY;j++){
-					var p = new Particle();
-					p.position.x = (map.width/bricks.amountX)*i;
-					p.position.y = (map.height/bricks.amountY)*j;
-					p.width = (map.width/bricks.amountX);
-					p.height = (map.height/bricks.amountY);
-					p.alpha = 0.5;
-					p.released = false;
-			    	p.color = "hsl("+((p.position.x/map.width + p.position.y/map.height) * 180) + ", 100%, 70%)";
-					bricks.particles.push(p);
-				}
+		var particles = [];
+		var amountX = 10;
+		var amountY = 10;
+
+		for (var i=0;i<amountX;i++){
+			for (var j=0;j<amountY;j++){
+				var p = new Particle();
+				p.position.x = (map.width/amountX)*i;
+				p.position.y = (map.height/amountY)*j;
+				p.width = (map.width/amountX);
+				p.height = (map.height/amountY);
+				p.alpha = 0.5;
+				p.released = false;
+		    	p.color = "hsl("+((p.position.x/map.width + p.position.y/map.height) * 180) + ", 100%, 70%)";
+				particles.push(p);
 			}
 		}
+
+
 		function update(ctx){
-			for (var i=0;i<bricks.particles.length;i++) {
-				var p = bricks.particles[i];
+			for (var i=0;i<particles.length;i++) {
+				var p = particles[i];
 				if(p.size <=0 || p.alpha <=0 || (p.position.y > map.height)){
-					bricks.particles.splice(i,1);
+					particles.splice(i,1);
 				}
 
 				p.position.x += p.velocity.x;
@@ -115,16 +128,13 @@ var fx = (function(){
 					p.velocity.y += 0.1;
 				}
 
-
-				if(draw){
-					ctx.save();
-						ctx.globalAlpha = p.alpha;
-						ctx.beginPath();
-						ctx.fillStyle = p.color;
-						ctx.rect(p.position.x, p.position.y, p.width, p.height);
-						ctx.fill();
-					ctx.restore();
-				}
+				ctx.save();
+					ctx.globalAlpha = p.alpha;
+					ctx.beginPath();
+					ctx.fillStyle = p.color;
+					ctx.rect(p.position.x, p.position.y, p.width, p.height);
+					ctx.fill();
+				ctx.restore();
 			}
 		}
 		function move(){
@@ -132,8 +142,8 @@ var fx = (function(){
 			m.isWithin = function(x,y,w,h){
 				return ( (m.x > x && m.x < x+w) && (m.y > y && m.y < y+h) );
 			}
-			for (var i=0;i<bricks.particles.length;i++){
-				var p = bricks.particles[i];
+			for (var i=0;i<particles.length;i++){
+				var p = particles[i];
 				if( !p.released && m.isWithin(p.position.x,p.position.y,p.width,p.height) ){
 					p.velocity.x = -5 + Math.random()*10;
 					p.velocity.y = -5 + Math.random()*10;
@@ -145,7 +155,6 @@ var fx = (function(){
 			move();
 		}
 		return {
-			reset:reset,
 			update:update,
 			move:move,
 			click:click,
@@ -153,15 +162,18 @@ var fx = (function(){
 	})();
 
 
-	var dot = (function(){
-		function reset(){
-			dots.particles = [];
-		}
+	var explosions = (function(){
+
+		var particles = [];
+		var amount = 20;
+		var bigAmount = 100;
+		var limit = 300;
+
 		function update(ctx){
-			for (i=0;i<dots.particles.length;i++) {
-				var p = dots.particles[i];
+			for (i=0;i<particles.length;i++) {
+				var p = particles[i];
 				if(p.size <=0 || p.alpha <=0 || (p.position.x < 0 || p.position.y < 0) || (p.position.x > map.width || p.position.y > map.height)){
-					dots.particles.splice(i,1);
+					particles.splice(i,1);
 				}
 
 				p.position.x += p.velocity.x;
@@ -169,40 +181,40 @@ var fx = (function(){
 				p.alpha -= p.fadeRate;
 				p.size -= 0.1;
 
-				if(draw){
-					ctx.save();
-						ctx.globalAlpha = p.alpha;
-						ctx.beginPath();
-						ctx.fillStyle = p.color;
-						ctx.arc(p.position.x, p.position.y, p.width/2, 0, Math.PI*2, true);
-						ctx.fill();
-					ctx.restore();
-				}
+				ctx.save();
+					ctx.globalAlpha = p.alpha;
+					ctx.beginPath();
+					ctx.fillStyle = p.color;
+					ctx.arc(p.position.x, p.position.y, p.width/2, 0, Math.PI*2, true);
+					ctx.fill();
+				ctx.restore();
 			}
 		}
 		function move() {
-			for (var i=0;i<dots.amount;i++) {
+			//if(particles.length>limit) return false;
+			for (var i=0;i<amount;i++) {
 				var p = new Particle();
-				p.width = 1;
+				p.width = 10;
 				var force = 10;
 				p.velocity = {x: (force/2) - Math.random()*force, y: (force/2) - Math.random()*force};
-				dots.particles.push(p);
+			    	p.color = "hsl("+((p.position.x/map.width + p.position.y/map.height) * 180) + ", 100%, 70%)";
+				particles.push(p);
 			}
 		}
 		function click() {
-			for (var i=0;i<dots.bigAmount;i++) {
+			if(particles.length>limit) return false;
+			for (var i=0;i<bigAmount;i++) {
 				var p = new Particle();
-					p.width = 10;
-					p.height = 10;
+					p.width = 10 + Math.random()*15;
+					p.height = p.width;
 					var force = 10;
 					p.velocity = {x: Math.random()*force-Math.random()*force, y: Math.random()*force-Math.random()*force};
 					p.fade = 0.01;
 			    	p.color = "hsl("+((p.position.x/map.width + p.position.y/map.height) * 180) + ", 100%, 70%)";
-				dots.particles.push(p);
+				particles.push(p);
 			}
 		}
 		return {
-			reset:reset,
 			update:update,
 			move:move,
 			click:click,
@@ -211,15 +223,16 @@ var fx = (function(){
 
 
 	var wheelTrail = (function(){
-		function reset(){
-			wheelTrails.particles = [];
-		}
+
+		var particles = [];
+		var amount = 20;
+
 		function update(ctx){
 			var m = communicate.get('mouse');
 			var maxSize = 20;
 
-			wheelTrails.particles.unshift({x:m.x,y:m.y});
-			if(wheelTrails.particles.length > maxSize) wheelTrails.particles.splice(wheelTrails.particles.length-1,1);
+			particles.unshift({x:m.x,y:m.y});
+			if(particles.length > maxSize) particles.splice(particles.length-1,1);
 
 			ctx.strokeStyle = "white";
 			ctx.lineWidth = 3;
@@ -227,8 +240,8 @@ var fx = (function(){
 			var gap = 10;
 
 			ctx.beginPath();
-			for(var i=0;i<wheelTrails.particles.length;i++){
-				var p = wheelTrails.particles[i];
+			for(var i=0;i<particles.length;i++){
+				var p = particles[i];
 
 				ctx.save();
 					ctx.globalAlpha = 0.1;
@@ -243,8 +256,8 @@ var fx = (function(){
 			ctx.closePath();
 
 			ctx.beginPath();
-			for(var i=0;i<wheelTrails.particles.length;i++){
-				var p = wheelTrails.particles[i];
+			for(var i=0;i<particles.length;i++){
+				var p = particles[i];
 
 				ctx.save();
 					ctx.globalAlpha = 0.1;
@@ -263,7 +276,103 @@ var fx = (function(){
 		function click() {
 		}
 		return {
-			reset:reset,
+			update:update,
+			move:move,
+			click:click,
+		}
+	})();
+
+
+	var trippyDots = (function(){
+		var particles = [];
+		var size = 40;
+		var rows = map.width/size;
+		var columns = map.height/size;
+
+		for(var i=0;i<rows+1;i++){
+			for(var j=0;j<columns+1;j++){
+				var a = {
+					r:size,
+					x:map.width/rows * i,
+					y:map.height/columns * j,
+				}
+				particles.push(a);
+			}
+		}
+
+		function update(ctx){
+			var m = communicate.get('mouse');
+
+			for(var i=0;i<particles.length;i++){
+				var a = particles[i];
+
+				ctx.save();
+				ctx.beginPath();
+				var threshold = 100;
+				if ( (m.y > a.y - threshold && m.y < a.y + threshold) || (m.x > a.x - threshold && m.x < a.x + threshold) ){
+					a.r += ((size/3) - a.r)/3;
+				}else{
+					a.r += (3 - a.r)/3;
+				}
+				ctx.arc(a.x, a.y, a.r, 0, Math.PI*2, true); 
+				ctx.closePath();
+				ctx.fillStyle = "#ffffff";
+				ctx.fill();
+				ctx.restore();
+			}
+		}
+		function move() {
+		}
+		function click() {
+		}
+		return {
+			update:update,
+			move:move,
+			click:click,
+		}
+	})();
+
+
+	var tamponGame = (function(){
+		var particles = [];
+
+		var tampon = {
+			x:0,
+			y:0,
+			width:50,
+			height:80,
+			rotation:0,
+			rotateSpeed:0,
+			gfx: new Image(),
+		}
+		tampon.gfx.src = "../img/tampon.png";
+
+		function reposition(){
+			tampon.x = Math.random()*(map.width-tampon.width);
+			tampon.y = Math.random()*(map.height-tampon.height);
+			tampon.rotation = Math.random()*360;
+			tampon.rotateSpeed = 1 + Math.random()*4;
+		}
+
+		reposition();
+
+		function update(ctx){
+			var m = communicate.get('mouse');
+			ctx.save();
+				tampon.rotation -= tampon.rotateSpeed;
+				ctx.translate(tampon.x,tampon.y);
+				ctx.rotate(tampon.rotation * Math.PI/180);
+				ctx.drawImage(tampon.gfx,-tampon.width/2,-tampon.height/2);
+			ctx.restore();
+		}
+		function move() {
+			var m = communicate.get('mouse');
+		}
+		function click() {
+			var m = communicate.get('mouse');
+			reposition();
+		}
+		return {
 			update:update,
 			move:move,
 			click:click,
@@ -287,7 +396,6 @@ var fx = (function(){
 	}
 	return {
 		init: init,
-		reset: reset,
 		update:update,
 		move:move,
 		click:click,

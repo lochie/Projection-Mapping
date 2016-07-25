@@ -1,5 +1,13 @@
-var GRIDFILE = "../_GRIDFILES/miniramp.txt";
+var GRIDFILE = null;
+GRIDFILE = "../_GRIDFILES/miniramp.txt";
+
 var sender = (function(){
+
+    window.onbeforeunload = confirmExit;
+    function confirmExit() {
+        return "Make sure you save your shit, if you have are you sure you wanna leave?";
+    }
+
 	var canvas = document.getElementById("canvas");
 
 	window.addEventListener("load", init, true);
@@ -9,9 +17,7 @@ var sender = (function(){
 		addListeners();
 
 		grid.init(function(){
-
 			loop();
-			
 		}, GRIDFILE);
 	}
 
@@ -21,6 +27,7 @@ var sender = (function(){
 
 		communicate.set( 'grid', grid.get() );
 		communicate.set( 'mouse', mouse );
+		communicate.set( 'keyboard', keyboard );
 		communicate.set( 'modifying', grid.isModify() );
 
 		render();
@@ -59,12 +66,23 @@ var sender = (function(){
 		isDown:false,
 		lastKey:null,
 		code:{
-			a:65,
-			s:83,
-			d:68,
-			f:70,
-			g:71,
-			h:72,
+			a : 65,
+			s : 83,
+			d : 68,
+			f : 70,
+			g : 71,
+			h : 72,
+			
+			"0" :  48,
+			"1" :  49,
+			"2" :  50,
+			"3" :  51,
+			"4" :  52,
+			"5" :  53,
+			"6" :  54,
+			"7" :  55,
+			"8" :  56,
+			"9" :  57,
 		}
 	}
 
@@ -220,8 +238,9 @@ var sender = (function(){
 						}else{
 							p.isDragged = false;
 						}
-
-						context.drawRect((p.x)-(size/2), (p.y)-(size/2), size, size);
+						var color = "#ff0000";
+						if(i==Math.floor(theGrid.length/2)) color = "#00ff00";
+						context.drawRect((p.x)-(size/2), (p.y)-(size/2), size, size, color);
 					}
 				}
 			}

@@ -1,13 +1,16 @@
+var mapScale = 200;
 var map = {
-	x:12,
-	y:4,
+	x:20,
+	y:1,
 
-	width:1300,
-	height:500,
+	width:7.2*mapScale,
+	height:3*mapScale,
 
 	deck:2,
 	coping:10,
 };
+
+console.log(map.width,map.height);
 
 // Animation Timer
 var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || setTimeout;

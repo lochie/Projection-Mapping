@@ -4,7 +4,7 @@ var grid = (function(){
 	var base = [];
 
 	function init(callback, file){
-		if( file ){
+		if( file != null ){
 			importGrid( file, callback );
 		}else{
 			create();

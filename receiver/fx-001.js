@@ -13,7 +13,7 @@ var fx = (function(){
 	}
 	video.muted = true;
 	video.loop = true;
-	video.currentTime = (startTime.minutes*60)+startTime.seconds;
+//	video.currentTime = (startTime.minutes*60)+startTime.seconds;
 	video.play();
 
 
@@ -27,28 +27,30 @@ var fx = (function(){
 		var keyboard = communicate.get( 'keyboard' );
 
 		switch (keyboard.lastKey){
-			case keyboard.code['0']:
-				updateVideo(ctx);
-				break;
 			case keyboard.code['1']:
-				trippyDots.update(ctx);
+				updateVideo(ctx);
+				updateLogo(ctx);
 				break;
 			case keyboard.code['2']:
-				brick.update(ctx);
+				trippyDots.update(ctx);
+				updateLogo(ctx);
 				break;
-			default:
-				break;
-		}
-
-		ctx.drawImage( thrusherLogo, (map.width/2)-(thrusherLogo.width/2), (map.height/2)-(thrusherLogo.height/2) );
-
-		switch (keyboard.lastKey){
 			case keyboard.code['3']:
-				ctx.fillStyle = "rgba(0,0,0,0.8)";
-				ctx.fillRect(0,0,map.width,map.height);
+				brick.update(ctx);
+				updateLogo(ctx);
+				break;
+			case keyboard.code['4']:
+				updateLogo(ctx);
+				ctx.fillStyle = "rgba(0,0,0,0.25)";
 				tamponGame.update(ctx);
 				break;
+			case keyboard.code['5']:
+				explosionVideo.update(ctx);
+				break;
 			default:
+			//	ctx.fillStyle = "rgba(0,0,0,0.8)";
+				ctx.fillStyle = "#ffffff";
+				ctx.fillRect(0,0,map.width,map.height);
 				break;
 		}
 
@@ -57,21 +59,46 @@ var fx = (function(){
 
 	}
 	function move(){
-		brick.move();
+		var keyboard = communicate.get( 'keyboard' );
+		switch (keyboard.lastKey){
+			case keyboard.code['3']:
+				brick.move();
+				break;
+			case keyboard.code['4']:
+				tamponGame.move();
+				break;
+			case keyboard.code['5']:
+				explosionVideo.move();
+				break;
+		}
 		explosions.move();
 		wheelTrail.move();
-		tamponGame.move();
 	}
 	function click(){
-		brick.click();
+		var keyboard = communicate.get( 'keyboard' );
+		switch (keyboard.lastKey){
+			case keyboard.code['3']:
+				brick.click();
+				break;
+			case keyboard.code['4']:
+				tamponGame.click();
+				break;
+			case keyboard.code['5']:
+				explosionVideo.click();
+				break;
+		}
 		explosions.click();
 		wheelTrail.click();
-		tamponGame.click();
 	}
 
 
 
 	/* STUFF */
+	function updateLogo(ctx){
+		ctx.save();
+			ctx.drawImage( thrusherLogo, (map.width/2)-(thrusherLogo.width/2), (map.height/2)-(thrusherLogo.height/2) );
+		ctx.restore();
+	}
 	function updateVideo(ctx){
 		ctx.drawImage( video, 0, 0, map.width/2, map.height/2, 0, 0, map.width/2, map.height/2 );
 
@@ -339,8 +366,8 @@ var fx = (function(){
 		var tampon = {
 			x:0,
 			y:0,
-			width:50,
-			height:80,
+			width:150,
+			height:150,
 			rotation:0,
 			rotateSpeed:0,
 			gfx: new Image(),
@@ -382,8 +409,93 @@ var fx = (function(){
 
 
 
+	var explosionVideo = (function(){
+
+		var particles = [];
+		var cells = {
+			x:10,
+			y:10,
+		};
+		var explode = false;
+
+		for (var i=0;i<cells.x;i++) {
+			for (var j=0;j<cells.y;j++) {
+				var p = new Particle();
+				p.position.origx = map.width/cells.x * i;
+				p.position.origy = map.height/cells.y * j;
+				p.position.x = p.position.origx;
+				p.position.y = p.position.origy;
+
+				p.rotation = 0;
+				p.width = map.width/cells.x;
+				p.height = map.height/cells.y;
+				p.velocity = {
+					x: 0,
+					y: 0,
+					rotation: 0
+				};
+				particles.push(p);
+			}
+		}
+
+		function update(ctx){
+			var i = 0;
+				for (i=0;i<particles.length;i++) {
+					var p = particles[i];
+					p.position.x += p.velocity.x *= 0.99;
+					p.position.y += p.velocity.y *= 0.99;
+					p.rotation += p.velocity.rotation *= 0.99;
+				}
+			if(!explode){
+
+			}else{
+			}
+			for (i=0;i<particles.length;i++) {
+				var p = particles[i];
+
+				ctx.save();
+					ctx.translate(p.position.x, p.position.y)
+					ctx.rotate(p.rotation * Math.PI/180)
+					ctx.beginPath();
+					ctx.fillStyle = "#FF0000";
+					ctx.drawImage( thrusherLogo, p.position.origx, p.position.origy, p.width, p.height, 0, 0, p.width, p.height );
+					ctx.fill();
+				ctx.restore();
+			}
+		}
+		function explosion() {
+			explode = true;
+			var f = 20;
+			var m = communicate.get('mouse');
+			for (i=0;i<particles.length;i++) {
+				var p = particles[i];
+
+				var force = {
+					x: (m.x < p.position.x) ? f : -f,
+					y: (m.y < p.position.y) ? f : -f
+				};
+				p.velocity = {
+					x: Math.random()*force.x,
+					y: Math.random()*force.y,
+					rotation: Math.random()* Math.random()*f
+				};
+			}
+		}
+		function move() {
+		}
+		function click() {
+			explosion();
+		}
+		return {
+			update:update,
+			move:move,
+			click:click,
+		}
+	})();
+
+
 	function Particle() {
-		var m = communicate.get('mouse')
+		var m = communicate.get('mouse');
 	    this.position = { x:m.x, y:m.y };
 	    this.velocity = { x:0, y:0 };
 		this.width = 0;

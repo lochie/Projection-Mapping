@@ -1,13 +1,14 @@
 var mapScale = 200;
 var map = {
-	x:20,
-	y:1,
+	x:2,
+	y:2,
 
-	width:7.2*mapScale,
+	//width:7.2*mapScale,
+	width:3*mapScale,
 	height:3*mapScale,
 
-	deck:2,
-	coping:10,
+	deck:0,
+	coping:0,
 };
 
 console.log(map.width,map.height);

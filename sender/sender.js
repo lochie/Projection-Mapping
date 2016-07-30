@@ -1,5 +1,5 @@
 var GRIDFILE = null;
-GRIDFILE = "../_GRIDFILES/miniramp.txt";
+//GRIDFILE = "../_GRIDFILES/miniramp.txt";
 
 var sender = (function(){
 
@@ -42,7 +42,10 @@ var sender = (function(){
 		drawers.main();
 	}
 
-
+	var offset = {
+		x:100,
+		y:100
+	}
 
 	var mouse = {
 		x: null,
@@ -50,8 +53,8 @@ var sender = (function(){
 		isDown: false,
 		isDragging:false,
 		update:function(x,y){
-			mouse.x = x;
-			mouse.y = y;
+			mouse.x = x - offset.x;
+			mouse.y = y - offset.y;
 		},
 		move:function(){
 		},
@@ -155,11 +158,14 @@ var sender = (function(){
 				for(var j=0;j<map.y+1;j++){
 					var _x = i * ( map.width / map.x );
 					var _y = j * ( map.height / map.y );
-					context.drawRect( _x, _y );
+					context.drawRect( _x + offset.x, _y + offset.y);
 				}
 			}
 		}
 		function birdseye() {
+			var ctx = canvas.getContext("2d");
+			ctx.save();
+			ctx.translate( offset.x, offset.y)
 			// ramp
 			context.drawRect(0, 0, map.width, map.height, '#dcbf97');
 			// deck
@@ -168,6 +174,7 @@ var sender = (function(){
 			// coping
 			context.drawRect((map.width/map.x)*map.deck, 0, map.coping, map.height, '#000000');
 			context.drawRect(map.width-((map.width/map.x)*map.deck), 0, map.coping, map.height, '#000000');
+			ctx.restore();
 		}
 
 

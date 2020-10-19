@@ -6,7 +6,7 @@ var fx = (function(){
 		thrusherLogo.src = "../img/thrusher.png";
 
 	var video = document.createElement('video');
-	video.src = "../video/long.mp4";
+	video.src = "../video/kaleidoscope.mp4";
 	var startTime = {
 		minutes:3,
 		seconds:43,

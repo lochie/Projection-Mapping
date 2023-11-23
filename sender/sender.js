@@ -1,5 +1,4 @@
-var GRIDFILE = null;
-//GRIDFILE = "../_GRIDFILES/miniramp.txt";
+var GRIDFILE = "../_GRIDFILES/miniramp.txt";
 
 var sender = (function(){
 
